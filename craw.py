@@ -16,14 +16,7 @@ def popularity(timestep, person): #relaxation - start with a guess while not don
     for f in friends(p):
         score = score+popularity(timestep-1, person)
         return score
-"""
-
-#def rank_web_pages(timestamp, url): #random web surfer that pick page randomly
-    #all the pages that have some links to a url
-    #/outgoinglinks[p]
-    #weblink structures is a directed graph
-    #how it was ranked
-    """
+    
     d = damping constant 0.8
     N = number of pages
     rank(0, url) = 1/N
