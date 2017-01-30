@@ -51,14 +51,21 @@ def crawl_web(seed):
     tocrawl = [seed]
     crawled = []
     index = {} #the result
+    graph = {} #new page add to graph to create network contains url and pages that link to target
+
     while tocrawl:
         page = tocreawl.pop() #remove the element O(1)
         if page not in crawled:
             content = get_page(page)
             add_page_to_index(index, page, content)
-            union(tocrawl, get_all_links(content)) #avoid duplication and dfs
+            outlinks = get_all_links(content)
+
+            #graph of a page associates with outlinks
+            graph[page] = outlinks
+
+            union(tocrawl, outlinks) #avoid duplication and dfs
             crawled.append(page)
-    return crawled
+    return index, graph
 
 
 def get_next_target(page):
