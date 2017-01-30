@@ -121,6 +121,7 @@ def quicksort(arr):
             left.append(q)
         else:
             right.append(q)
+    return quicksort(left)+[pivot]+quicksort(right)
 
 def crawl_web(seed):
     tocrawl = [seed]
