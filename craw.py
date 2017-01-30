@@ -18,10 +18,43 @@ def popularity(timestep, person): #relaxation - start with a guess while not don
         return score
 """
 
-def rank_web_pages(timestamp, url): #random web surfer that pick page randomly
+#def rank_web_pages(timestamp, url): #random web surfer that pick page randomly
     #all the pages that have some links to a url
     #/outgoinglinks[p]
     #weblink structures is a directed graph
+    #how it was ranked
+    """
+    d = damping constant 0.8
+    N = number of pages
+    rank(0, url) = 1/N
+    rank(t, url) = d* sum of rank(t-1, p) where p in links[url] / outlinks[p]+ ((1-d)/N)
+    """
+def compute_ranks(graph):
+    """
+    input url, outlinks
+    return dic of url and rankpoints
+    """
+    d = 0.8 #damping factor
+    numloops = 10 #relaxation
+    ranks = {}
+    npages = len(graph) #N
+    
+    #initial rank
+    for page in graph:
+        ranks[page] = 1.0 / npages
+
+    for i in range(numloops):
+        newranks = {}
+        for page in graph: #for everypage
+            #initialize with a probability of starting random
+            newrank = (1-d) / npages
+            #update the newrank by adding summation the inlink ranks
+            for friend in graph:
+                if page in graph[friend]: #if the page is a inlink of a friend
+                    newrank += d * (ranks[friend]/len(graph[friend])) #damping factor*friend's initial rank/friend's npages/outlinks
+            newranks[page] = newrank 
+        ranks = newranks
+    return ranks
 
 def get_page(url):
     try:
@@ -47,6 +80,18 @@ def lookup(index, keyword):
         return index[keyword] #return urls that contains the keyword
     return None
 
+def lookup_best(index, keyword, ranks):
+    #finds the page that contains that keyword and return the best in the ranks
+    pages = lookup(index, keyword) #pages with the keyword
+    if not pages:
+        return None
+
+    best_page = pages[0]
+    for page in pages:
+        if ranks[page]>ranks[best_page]:
+            best_page = page
+    return best_page
+
 def crawl_web(seed):
     tocrawl = [seed]
     crawled = []
@@ -54,7 +99,8 @@ def crawl_web(seed):
     graph = {} #new page add to graph to create network contains url and pages that link to target
 
     while tocrawl:
-        page = tocreawl.pop() #remove the element O(1)
+        page = tocrawl.pop() #remove the element O(1)
+
         if page not in crawled:
             content = get_page(page)
             add_page_to_index(index, page, content)
@@ -62,18 +108,22 @@ def crawl_web(seed):
 
             #graph of a page associates with outlinks
             graph[page] = outlinks
-
-            union(tocrawl, outlinks) #avoid duplication and dfs
+            tocrawl = union(tocrawl, outlinks) #avoid duplication and dfs
             crawled.append(page)
+
     return index, graph
 
+def union(tocrawl, outlinks):
+    if outlinks:
+        return list(set(tocrawl)|set(outlinks))
+    return tocrawl
 
 def get_next_target(page):
     start_link = page.find('<a href=')
     if not start_link:
         return None, 0
     start_quote = page.find('"', start_link) #start from beginning
-    endquote = page.find('"', startquote + 1) #start searching after the first quote
+    end_quote = page.find('"', start_quote + 1) #start searching after the first quote
     url = page[start_quote+1: end_quote] #everything in the quotation mark
     return url, end_quote
 
@@ -86,5 +136,5 @@ def get_all_links(page):
             page = page[endpos:] #next chunk
         else:
             break #no more urls
-    print collections
+    return collections
 
