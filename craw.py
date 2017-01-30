@@ -92,6 +92,36 @@ def lookup_best(index, keyword, ranks):
             best_page = page
     return best_page
 
+def ordered_search(index, keyword, ranks):
+    pages = lookup(index, keyword)
+    return quicksort_by_rank(pages, ranks) #sort the pages by ranks descending
+
+def quicksort_by_rank(pages, ranks):
+    if not pages or len(pages)<=1: #sorted
+        return pages
+    pivot = ranks[pages[0]] #pick a comparison point
+    left = [] #the smaller
+    right = [] #the bigger
+    for page in pages[1:]:
+        if ranks[page]<=pivot:
+            left.append(page)
+        else:
+            right.append(page)
+
+    return quicksort_by_rank(right, ranks) + [pages[0]] + quicksort_by_rank(left, ranks)
+
+def quicksort(arr):
+    if not arr:
+        return left, right
+    pivot = arr[0]
+    left = []
+    right = []
+    for q in arr:
+        if q<pivot:
+            left.append(q)
+        else:
+            right.append(q)
+
 def crawl_web(seed):
     tocrawl = [seed]
     crawled = []
